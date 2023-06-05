@@ -8,6 +8,8 @@ import {
   onSnapshot,
   query,
   orderBy,
+  doc,
+  getDocs
 } from "@firebase/firestore";
 
 import "./Styles.css";
@@ -15,11 +17,13 @@ import "./Styles.css";
 export const Chat = ({ room }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+
   const messagesRef = collection(db, "messages");
+  const tokenRef = collection(db, "newToken");
 
 
 
-useEffect(() => {
+  useEffect(() => {
     const queryMessages = query(
       messagesRef,
       where("room", "==", room),
@@ -27,24 +31,47 @@ useEffect(() => {
     );
 
     const unsuscribe = onSnapshot(queryMessages, (snapshot) => {
-        let messages = [];
-        snapshot.forEach((doc) => {
-          messages.push({ ...doc.data(), id: doc.id });
-        });
-        console.log(messages);
-        setMessages(messages);
+      let messages = [];
+      snapshot.forEach((doc) => {
+        messages.push({ ...doc.data(), id: doc.id });
       });
-  
-      return () => unsuscribe();
+      console.log(messages);
+      setMessages(messages);
+    });
+
+    return () => unsuscribe();
 
   }, []);
+
+
+  const gettingDocs = async () => {
+    try {
+      const data = await getDocs(tokenRef);
+      console.log("read data",data)
+      
+      const filteredData = data.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+
+      console.log("filteredData:",filteredData)
+
+    } catch (error) {
+      console.log("error in reading docs",error)
+    }
+
+  }
+
+  useEffect(() => {
+    gettingDocs()
+  }, [])
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     console.log(newMessage)
-    console.log("room",room)
-    console.log("user",auth.currentUser.displayName)
+    console.log("room", room)
+    console.log("user", auth.currentUser.displayName)
 
     if (newMessage === "") return;
     await addDoc(messagesRef, {

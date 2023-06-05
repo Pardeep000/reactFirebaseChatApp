@@ -18,7 +18,7 @@ const app = initializeApp(firebaseConfig);
 
 
 
-
+request.time < timestamp.date(2023, 7, 5);
 
 authentication:
 project-369714464346
